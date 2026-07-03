@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container fade-in">
+    <div class="header-section">
+        <h1>Welcome, <span class="text-gradient">{{ username }}</span>! 🎓</h1>
+        <p class="subtitle">Here's an overview of your academic workload</p>
+    </div>
+
+    <!-- Key Metrics Grid -->
+    <div class="metrics-grid">
+        <div class="metric-card glass">
+            <h3>Total Subjects</h3>
+            <div class="value">{{ total_subjects }}</div>
+        </div>
+        <div class="metric-card glass">
+            <h3>Pending Tasks</h3>
+            <div class="value text-warning">{{ total_pending }}</div>
+        </div>
+        <div class="metric-card glass">
+            <h3>Completed Tasks</h3>
+            <div class="value text-success">{{ total_completed }}</div>
+        </div>
+        <div class="metric-card glass">
+            <h3>Avg Readiness</h3>
+            <div class="value text-primary">{{ avg_readiness }}%</div>
+        </div>
+    </div>
+
+    <div class="dashboard-grid mt-4">
+        <!-- Workload Chart -->
+        <div class="card glass chart-card">
+            <h2>Workload Distribution</h2>
+            <div class="chart-container">
+                <canvas id="workloadChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Stress Level Indicator -->
+        <div class="card glass chart-card">
+            <h2>Mental Well-being & Stress Analysis</h2>
+            <div class="stress-container">
+                <div class="chart-container half-doughnut">
+                    <canvas id="stressChart"></canvas>
+                    <div class="stress-value-overlay" id="stressScoreDisplay">0%</div>
+                </div>
+                <div class="stress-details">
+                    <h3 id="stressLabel">Loading...</h3>
+                    <p id="stressAdvice">Analyzing your workload...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        console.log("Fetching dashboard data...");
+        fetch('/api/dashboard_data')
+            .then(res => res.json())
+            .then(data => {
+                // Workload Chart
+                const wcCtx = document.getElementById('workloadChart').getContext('2d');
+                new Chart(wcCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.workload.labels,
+                        datasets: [{
+                            label: 'Estimated Hours',
+                            data: data.workload.data,
+                            backgroundColor: 'rgba(111, 66, 193, 0.7)',
+                            borderColor: 'rgba(111, 66, 193, 1)',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+                            x: { grid: { display: false } }
+                        },
+                        plugins: {
+                            legend: { display: false }
+                        }
+                    }
+                });
+
+                // Stress Chart
+                const stCtx = document.getElementById('stressChart').getContext('2d');
+                new Chart(stCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Stress', 'Relaxation'],
+                        datasets: [{
+                            data: [data.stress.score, 100 - data.stress.score],
+                            backgroundColor: [data.stress.color, 'rgba(255,255,255,0.05)'],
+                            borderWidth: 0,
+                            cutout: '80%'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        rotation: 270,
+                        circumference: 180,
+                        plugins: { legend: { display: false }, tooltip: { enabled: false } }
+                    }
+                });
+                
+                document.getElementById('stressScoreDisplay').innerText = data.stress.score + "%";
+                const labelEl = document.getElementById('stressLabel');
+                labelEl.innerText = "Current Level: " + data.stress.label;
+                labelEl.style.color = data.stress.color;
+
+                const adviceEl = document.getElementById('stressAdvice');
+                if(data.stress.score < 30) adviceEl.innerText = "You're doing great! Keep up the good work and maintain your pace.";
+                else if(data.stress.score < 70) adviceEl.innerText = "Things are getting a bit busy. Prioritize urgent tasks.";
+                else adviceEl.innerText = "Take a deep breath! Break down your tasks into smaller chunks and focus on immediate deadlines.";
+            });
+    });
+</script>
+{% endblock %}

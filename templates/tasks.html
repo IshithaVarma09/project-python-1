@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container fade-in">
+    <div class="header-section">
+        <h1>Tasks & <span class="text-gradient">Workload</span> 📝</h1>
+        <p class="subtitle">Manage all your upcoming assignments and labs</p>
+    </div>
+
+    <div class="dashboard-grid split-layout mt-4">
+        <!-- Add Task Form -->
+        <div class="card glass">
+            <h2>Add New Task</h2>
+            <form action="{{ url_for('tasks_page') }}" method="POST" class="mt-2">
+                <div class="form-group">
+                    <label>Task Title</label>
+                    <input type="text" name="title" required placeholder="e.g. Data Structures Assignment">
+                </div>
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label>Task Type</label>
+                        <select name="type">
+                            <option value="Assignment">Assignment</option>
+                            <option value="Lab Record">Lab Record</option>
+                            <option value="Project">Project</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group half">
+                        <label>Subject</label>
+                        <select name="subject">
+                            {% for sub in subjects %}
+                            <option value="{{ sub }}">{{ sub }}</option>
+                            {% endfor %}
+                            {% if not subjects %}
+                            <option value="General">General</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label>Deadline</label>
+                        <input type="date" name="deadline" required>
+                    </div>
+                    <div class="form-group half">
+                        <label>Est. Hours</label>
+                        <input type="number" name="estimated_hours" min="1" max="100" value="2" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block mt-2">Add Task</button>
+            </form>
+        </div>
+
+        <!-- Task List -->
+        <div class="card glass">
+            <h2>Pending Tasks</h2>
+            <div class="task-list mt-2">
+                {% if pending_tasks %}
+                    {% for task in pending_tasks %}
+                    <div class="task-item">
+                        <div class="task-info">
+                            <h4>{{ task.title }} <span class="badge">{{ task.type }}</span></h4>
+                            <p class="task-meta">
+                                📅 Due: {{ task.deadline }} | ⏱️ {{ task.estimated_hours }} hrs | 📚 {{ task.subject }}
+                            </p>
+                        </div>
+                        <div class="task-actions">
+                            <a href="{{ url_for('complete_task', task_id=task.id) }}" class="btn btn-success btn-sm">Complete</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <p>No pending tasks! Enjoy your free time. ☕</p>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <h2 class="mt-4">Completed Tasks</h2>
+            <div class="task-list mt-2">
+                {% if completed_tasks %}
+                    {% for task in completed_tasks %}
+                    <div class="task-item completed">
+                        <div class="task-info">
+                            <h4>{{ task.title }} <span class="badge completed">{{ task.type }}</span></h4>
+                            <p class="task-meta"><del>Due: {{ task.deadline }}</del></p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No completed tasks yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Academic Workload Management and Exam Preparation System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    {% if session.get('user_id') %}
+    <nav class="navbar glass">
+        <div class="nav-brand">📚 Smart Academic Workload Management & Exam Preparation System</div>
+        <div class="nav-links">
+            <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}">Dashboard</a>
+            <a href="{{ url_for('tasks_page') }}" class="{% if request.endpoint == 'tasks_page' %}active{% endif %}">Tasks</a>
+            <a href="{{ url_for('exam_page') }}" class="{% if request.endpoint == 'exam_page' %}active{% endif %}">Exam Prep</a>
+            <a href="{{ url_for('logout') }}" class="btn-logout">Log Out</a>
+        </div>
+    </nav>
+    {% endif %}
+
+    <div class="container mt-2">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+    </div>
+
+    {% block content %}{% endblock %}
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% if session.get('user_id') %}
+    <!-- Toast container only for logged-in users -->
+    <div id="toast-container" class="toast-container"></div>
+    {% endif %}
+    {% block scripts %}{% endblock %}
+</body>
+</html>

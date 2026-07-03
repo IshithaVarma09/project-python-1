@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container fade-in">
+    <div class="header-section">
+        <h1>Exam <span class="text-gradient">Preparation</span> 🎯</h1>
+        <p class="subtitle">Track your readiness for upcoming exams</p>
+    </div>
+
+    <div class="dashboard-grid split-layout mt-4">
+        <!-- Subjects Management -->
+        <div class="card glass">
+            <h2>Manage Subjects</h2>
+            
+            <!-- Add Subject-->
+            <form action="{{ url_for('exam_page') }}" method="POST" class="mt-2 border-bottom pb-3 mb-3">
+                <input type="hidden" name="action" value="add_subject">
+                <div class="form-group">
+                    <label>Subject Name</label>
+                    <input type="text" name="name" required placeholder="e.g., Database Systems">
+                </div>
+                <div class="form-group">
+                    <label>Target Score (%)</label>
+                    <input type="number" name="target_score" min="0" max="100" value="80" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Add Subject</button>
+            </form>
+
+            <!-- Update Progress -->
+            <form action="{{ url_for('exam_page') }}" method="POST">
+                <input type="hidden" name="action" value="update_progress">
+                <div class="form-group">
+                    <label>Update Progress</label>
+                    <select name="subject_id" required>
+                        {% for sub in subjects %}
+                        <option value="{{ sub.id }}">{{ sub.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group flex-centered gap-2">
+                    <input type="range" name="progress" min="0" max="100" value="0" style="flex:1" oninput="this.nextElementSibling.value = this.value + '%'">
+                    <output>0%</output>
+                </div>
+                <button type="submit" class="btn btn-success btn-block mt-2">Update Progress</button>
+            </form>
+        </div>
+
+        <!-- Progress View -->
+        <div class="card glass">
+            <h2>Exam Readiness</h2>
+            <div class="progress-list mt-2">
+                {% if subjects %}
+                    {% for sub in subjects %}
+                    <div class="progress-item mb-3">
+                        <div class="progress-header">
+                            <h4>{{ sub.name }}</h4>
+                            <span>{{ sub.preparation_progress }}% (Target: {{ sub.target_score }}%)</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill {% if sub.preparation_progress >= sub.target_score %}target-met{% endif %}" style="width: {{ sub.preparation_progress }}%"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <p>No subjects added yet. Start by adding one!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
